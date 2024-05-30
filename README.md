@@ -6,7 +6,7 @@
 
 <div>
 <h4>Grupo: Fuentón de achuras</h4>
-<h4>Integrantes: Agustín Braco, Ayelén Corrillo, Claudio Rodríguez, Daniel Drago, Justo Fleitas, Mercedes Marighetti, Tobias Arraiza.</h4>
+<h4>Integrantes: Agustín Braco, Ayelén Corrillo, Claudio Rodríguez, Daniel Drago, Mercedes Marighetti, Tobias Arraiza.</h4>
 </div>
 
 <hr>
