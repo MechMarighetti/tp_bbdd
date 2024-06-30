@@ -5,29 +5,34 @@ USE achuras;
 # Crear tablas
 CREATE TABLE IF NOT EXISTS usuarios(
 	id_usuario INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	nombre VARCHAR(255),
-	apellido VARCHAR(255),
-	dni int(8),
-	mail VARCHAR(255),
-	telefono INT(10)
+	nombreUsuario VARCHAR(20),
+	apellidoUsuario VARCHAR(20),
+	dniUsuario int(8),
+	mailUsuario VARCHAR(50),
+	telefonoUsuario INT(12)
 );
 
 CREATE TABLE IF NOT EXISTS canchas(
 	id_cancha INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	capacidad INT(2),
-	suelo VARCHAR(255),
+	FOREIGN KEY (id_tiposuelo) REFERENCES achuras.tipoDeSuelo(id_tiposuelo), INT(1),
 	techo BOOLEAN,
 	precio INT(6),
-	activa BOOLEAN
+	disponible BOOLEAN 
+);
+
+CREATE TABLE IF NOT EXISTS tipoDeSuelo(
+	id_tiposuelo INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	tipodesuelo VARCHAR (20),
 );
 
 CREATE TABLE IF NOT EXISTS administradores(
 	id_administrador INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	nombre VARCHAR(255),
-	apellido VARCHAR(255),
-	dni int(8),
-	mail VARCHAR(255),
-	telefono INT(10)
+	nombreAdmin VARCHAR(20),
+	apellidoAdmin VARCHAR(20),
+	dniAdmin int(8),
+	mailAdmin VARCHAR(50),
+	telefonoAdmin INT(12)
 );
 
 CREATE TABLE IF NOT EXISTS reservas(
@@ -35,13 +40,27 @@ CREATE TABLE IF NOT EXISTS reservas(
 	id_usuario INT NOT NULL,
 	id_cancha INT NOT NULL,
 	id_administrador INT NOT NULL,
+	id_estadoReserva INT NOT NULL,
+	id_metodoPago INT NOT NULL,
+	FOREIGN KEY (id_estadoReserva) REFERENCES achuras.estadoReserva(id_estadoReserva),
+	FOREIGN KEY (id_metodoPago) REFERENCES achuras.metodoDePago(id_metodoPago),
 	FOREIGN KEY (id_usuario) REFERENCES achuras.usuarios(id_usuario),
 	FOREIGN KEY (id_cancha) REFERENCES achuras.canchas(id_cancha),
 	FOREIGN KEY (id_administrador) REFERENCES achuras.administradores(id_administrador),
-	fecha DATE,
-	hora TIME,
-	precio INT(6),
-	abonada BOOLEAN DEFAULT FALSE
+	fechaInicio DATETIME(),
+	fechaFin DATETIME(),
+	monto INT(6),
+	seña INT(5),
+);
+
+CREATE TABLE IF NOT EXISTS metododePago(
+	id_metodoPago INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	metodoPago VARCHAR (25),
+);
+
+CREATE TABLE IF NOT EXISTS estadoReserva(
+	id_estadoReserva INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	estadoReserva VARCHAR (10),
 );
 
 # Insertar registros
@@ -53,11 +72,30 @@ INSERT INTO usuarios VALUES
 (NULL, 'Laura', 'Sánchez', 33445566, 'laura.sanchez@mail.com', 1102453829);
 
 INSERT INTO canchas VALUES
-(NULL, 10, 'Sintético', 0, 20000, 1),
-(NULL, 10, 'Cemento', 1, 12000, 1),
-(NULL, 14, 'Sintético', 1, 28000, 1),
-(NULL, 14, 'Cemento', 0, 17000, 0),
-(NULL, 22, 'Césped', 0, 44000, 1);
+(NULL, 10, 3, 0, 20000, 1),
+(NULL, 10, 0, 1, 12000, 1),
+(NULL, 14, 3, 1, 28000, 1),
+(NULL, 14, 0, 0, 17000, 0),
+(NULL, 22, 1, 0, 44000, 1);
+(NULL, 14, 2, 0, 44000, 1);
+
+INSERT INTO tipoDeSuelo VALUES
+(NULL, 'Cemento'),
+(NULL, 'Césped'),
+(NULL, 'Flotante'),
+(NULL, 'Sintético'),
+
+INSERT INTO metodoDePago VALUES
+(NULL, 'Efectivo'),
+(NULL, 'Transferencia Bancaria'),
+(NULL, 'Pago Electrónico'),
+(NULL, 'Tarjetas de Crédito'),
+
+INSERT INTO estadoReserva VALUES
+(NULL, 'Anulada'),
+(NULL, 'Cancelada'),
+(NULL, 'Abonada'),
+(NULL, 'Completada'),
 
 INSERT INTO administradores VALUES
 (NULL, 'Agustín', 'Braco', 31586279, 'agustin.braco@mail.com', 1132546985),
@@ -69,27 +107,27 @@ INSERT INTO administradores VALUES
 (NULL, 'Tobías', 'Arraiza', 63489125, 'tomas.arraiza@mail.com', 1123045678);
 
 INSERT INTO reservas VALUES
-(NULL, 1, 3, 4, '2024-06-20', '15:00:00', 28000, FALSE),
-(NULL, 2, 3, 2, '2024-06-05', '19:00:00', 28000, TRUE),
-(NULL, 3, 1, 5, '2024-06-21', '12:00:00', 20000, FALSE),
-(NULL, 4, 3, 1, '2024-06-12', '21:00:00', 28000, FALSE),
-(NULL, 2, 2, 2, '2024-06-16', '12:00:00', 12000, TRUE),
-(NULL, 5, 1, 3, '2024-06-03', '18:00:00', 20000, TRUE),
-(NULL, 4, 2, 7, '2024-06-30', '13:00:00', 12000, TRUE);
+(NULL, 1, 1, 1, 1, 1, 1, '2024-06-05-19:00:00', '2024-06-05-21:00:00', 20000, 10000 )
+(NULL, 2, 1, 3, 1, 5, 2, '2024-06-07-15:00:00', '2024-06-07-18:00:00', 60000, 20000 )
+(NULL, 1, 3, 2, 4, 1, 1, '2024-06-08-09:00:00', '2024-06-08-12:00:00', 66000, 40000 )
+(NULL, 2, 1, 3, 3, 1, 0, '2024-06-09-21:00:00', '2024-06-09-23:00:00', 44000, 20000 )
+	
+
 
 # Consultas
 # Total de canchas disponibles
 SELECT COUNT(*) AS 'Canchas disponibles'
 FROM canchas
-WHERE activa = 1;
+WHERE disponible = 1;
 
 # Canchas disponibles según capacidad
-SELECT canchas.capacidad AS 'Capacidad', canchas.suelo AS 'Suelo', canchas.precio AS 'Precio'
+SELECT canchas.capacidad AS 'Capacidad', tipoDeSuelo.tipodesuelo AS 'Suelo', canchas.precio AS 'Precio'
 FROM canchas
-WHERE activa = 1 && capacidad = 14;
+	INNER JOIN tipoDeSuelo ON canchas.id_tiposuelo = tipoDeSuelo.id_tiposuelo
+WHERE disponible = 1 && capacidad = 14;
 
 # Reservas abonadas ordenadas por fecha y hora con administrador concatenado
-SELECT reservas.id_cancha AS 'Cancha', reservas.fecha AS 'Fecha', reservas.hora AS 'Horario', CONCAT(administradores.nombre, ' ', administradores.apellido) AS 'Reservado por'
+SELECT reservas.id_cancha AS 'Cancha', reservas.fecha AS 'Fecha', reservas.hora AS 'Horario', CONCAT(administradores.nombreAdmin, ' ', administradores.apellidoAdmin) AS 'Reservado por'
 FROM reservas
 INNER JOIN administradores ON reservas.id_administrador = administradores.id_administrador
 WHERE reservas.abonada = 1
